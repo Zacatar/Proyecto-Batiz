@@ -1,5 +1,3 @@
-
-
 //package Compiler;
 
 //import GUI.MainFrame;
@@ -35,11 +33,13 @@ public class Scanner {
     
 //MÉTODO que retorna tokens válidos al parser
     public String getToken(boolean b) {
-        boolean tokenValido = false;
-        token = tokens[k];
+        boolean tokenValido = false;  
+        if (k >= tokens.length) return null;  
+        token = tokens[k]; 
         if(b) {
-            if(k < tokens.length-1) {
             k++;
+            if(k >= tokens.length) return null;{ // Aseguramos que no se salga del límite del array
+                token = tokens[k];
             }
         }
                 

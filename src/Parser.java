@@ -35,6 +35,17 @@ public class Parser {
         new Parser("var1 int ; var2 int ; var1 := var2 + var1 ; print var1 + var2 ;");
     } */
 
+public String getSymbolTableString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("TABLA DE SÍMBOLOS\n");
+    sb.append("-----------------\n");
+    for(int i=0; i<tablaSimbolos.size(); i++) {
+        Declarax dx = (Declarax)tablaSimbolos.get(i);
+        sb.append(dx.s1).append(" : ").append(dx.s2.getTypex()).append("\n");
+    }
+    sb.append("-----------------\n");
+    return sb.toString();
+}
 
     public Parser(String codigo) {  
         s = new Scanner(codigo);
@@ -45,47 +56,51 @@ public class Parser {
     
     //INICIO DE ANÁLISIS SINTÁCTICO
     public void advance() {
-        token = s.getToken(true);
-        tokenActual = s.getToken(false);
-        tknCode = stringToCode(token);
-    }
-    
-    public void eat(int t) {
-        tokenEsperado = t;
-        if(tknCode == t) {
-            setLog("Token: " + token + "\n" + "Tipo:  "+ s.getTipoToken());
-            advance();
-        }
-        else{
-            error(token, "token tipo:"+t);
-        }
-    }
-    
-    public Programax P() {
-        Declarax d = D();
-        createTable();
-        Statx s = S();
-        
-        return new Programax(tablaSimbolos,s);
-    }
-    
-    public Declarax D() {
-      if(tknCode == id) {
-        if(stringToCode(s.getToken(false)) == intx || stringToCode(s.getToken(false)) == floatx) {
-          String s = token;
-          eat(id); Typex t = T(); eat(semi); D();
-          tablaSimbolos.addElement(new Declarax(s, t));
-          return new Declarax(s, t);
-        }
-        else{return null;}
-      }
+    token = s.getToken(true);
+    tknCode = stringToCode(token);
+    tokenActual = s.getToken(false);
+}
 
-      else if(tknCode != id){return null;}
-      else{
-        error(token, "(id)");
-        return null;
-      }            
+
+public void eat(int t) {
+    tokenEsperado = t;
+    if(tknCode == t) {
+        setLog("Token: " + token + "\n" + "Tipo:  "+ s.getTipoToken());
+        advance();
     }
+    else {
+        error(token, "token tipo:"+t);
+    }
+}
+
+public Programax P() {
+    D();          // Procesa todas las declaraciones, llenando tablaSimbolos
+    createTable(); // Imprime la tabla de símbolos
+    Statx st = S(); // Procesa sentencias
+    
+    return new Programax(tablaSimbolos, st);
+}
+
+
+// Declaraciones múltiples (D → id (int | float) ; D | ε)
+// Procesa múltiples declaraciones: D -> id (int | float) ; D | ε
+public void D() {
+    while (tknCode == id) {
+        String idToken = token; // Guarda el id actual
+        eat(id);                // Consume el id
+        if (tknCode == intx || tknCode == floatx) {
+            Typex tipo = T();   // Consume el tipo (int o float)
+            eat(semi);          // Consume ';'
+            tablaSimbolos.addElement(new Declarax(idToken, tipo));
+        } else {
+            error(token, "(int | float)");
+            return; // o lanzar excepción para detener ejecución
+        }
+    }
+    // Cuando no hay más id, es ε (vacío), termina el ciclo
+}
+
+
     
     public Typex T() {
         if(tknCode == intx) {

@@ -4,7 +4,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.*;
 
 public class Main {
@@ -28,22 +27,14 @@ public class Main {
         miVentana = new JFrame("Compilador");
         miVentana.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         miVentana.setSize(1000, 600);
-        miVentana.setLocationRelativeTo(null); // Centrar ventana
+        miVentana.setLocationRelativeTo(null);
 
-        // Panel principal con BorderLayout
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         miVentana.setContentPane(mainPanel);
 
-        // Crear menú
         crearMenu();
-
-        // Crear panel superior para botones
-        JPanel panelBotones = crearPanelBotones();
-        mainPanel.add(panelBotones, BorderLayout.NORTH);
-
-        // Crear panel central para áreas de texto
-        JPanel panelTextos = crearPanelTextos();
-        mainPanel.add(panelTextos, BorderLayout.CENTER);
+        mainPanel.add(crearPanelBotones(), BorderLayout.NORTH);
+        mainPanel.add(crearPanelTextos(), BorderLayout.CENTER);
 
         configurarListeners();
 
@@ -68,7 +59,6 @@ public class Main {
         archivo.addSeparator();
         archivo.add(salir);
 
-        // Acciones menú
         nuevo.addActionListener(e -> limpiarTexto());
         abrir.addActionListener(e -> abrirArchivo());
         guardar.addActionListener(e -> guardarArchivo());
@@ -85,7 +75,6 @@ public class Main {
         botonIntermedio = new JButton("Intermedio");
         botonObjeto = new JButton("Objeto");
 
-        // Estado inicial botones
         botonParser.setEnabled(false);
         botonSemantico.setEnabled(false);
         botonIntermedio.setEnabled(false);
@@ -118,21 +107,18 @@ public class Main {
         JScrollPane scrollIntermedio = new JScrollPane(textAreaIntermedio);
         JScrollPane scrollObjeto = new JScrollPane(textAreaObjeto);
 
-        // Program
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0.3;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         panel.add(scrollProgram, gbc);
 
-        // Intermedio
         gbc.gridx = 1;
         gbc.weightx = 0.35;
         panel.add(scrollIntermedio, gbc);
 
-        // Objeto
         gbc.gridx = 2;
         gbc.weightx = 0.35;
         panel.add(scrollObjeto, gbc);
@@ -141,31 +127,27 @@ public class Main {
     }
 
     private void configurarListeners() {
-        // Listener para activar/desactivar botones al escribir
         textAreaProgram.getDocument().addDocumentListener(new DocumentListener() {
             private void resetButtons() {
                 botonLexico.setEnabled(true);
-                botonParser.setEnabled(true);
+                botonParser.setEnabled(false);
                 botonSemantico.setEnabled(false);
                 botonLimpiar.setEnabled(true);
             }
-            @Override
             public void insertUpdate(DocumentEvent e) { resetButtons(); }
-            @Override
             public void removeUpdate(DocumentEvent e) { resetButtons(); }
-            @Override
             public void changedUpdate(DocumentEvent e) { resetButtons(); }
         });
 
         botonLimpiar.addActionListener(e -> limpiarTexto());
-
+        botonLexico.addActionListener(e -> ejecutarLexico());
         botonParser.addActionListener(e -> ejecutarParser());
-
-        // Aquí puedes añadir más listeners para otros botones según tu lógica
     }
 
     private void limpiarTexto() {
         textAreaProgram.setText("");
+        textAreaIntermedio.setText("");
+        textAreaObjeto.setText("");
         botonParser.setEnabled(false);
         botonLexico.setEnabled(true);
     }
@@ -173,7 +155,6 @@ public class Main {
     private void abrirArchivo() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos de texto", "txt"));
-
         int resultado = fileChooser.showOpenDialog(miVentana);
         if (resultado == JFileChooser.APPROVE_OPTION) {
             File archivo = fileChooser.getSelectedFile();
@@ -209,18 +190,71 @@ public class Main {
         }
     }
 
-    private void ejecutarParser() {
-        String codigo = textAreaProgram.getText();
-        try {
-            new Parser(codigo);
-            JOptionPane.showMessageDialog(miVentana, "Análisis sintáctico completado correctamente.", "Parser",
-                    JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(miVentana, "Error en Parser:\n" + ex.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+    private void ejecutarLexico() {
+    String codigo = textAreaProgram.getText();
+    Scanner scanner = new Scanner(codigo);
+    StringBuilder resultado = new StringBuilder();
+
+    String token;
+
+    // Proteger con límite de tokens y checar índice
+    int maxTokens = 10000; // seguridad para evitar ciclos infinitos
+    int contador = 0;
+
+    do {
+        if (scanner.checkNextToken() == null || scanner.checkNextToken().isEmpty()) break;
+
+        token = scanner.getToken(true);
+
+        if (token == null) break;
+
+        if (token.equals("TOKEN INVÁLIDO")) {
+            resultado.append("Token inválido encontrado. Análisis detenido.\n");
+            break;
         }
+
+        resultado.append(token).append(" - ").append(scanner.getTipoToken()).append("\n");
+
+        contador++;
+        if (contador > maxTokens) {
+            resultado.append("Error: demasiados tokens. Posible bucle infinito.\n");
+            break;
+        }
+
+    } while (true);
+
+    textAreaIntermedio.setText(resultado.toString());
+
+    botonParser.setEnabled(true);
+    botonSemantico.setEnabled(false);
+    botonIntermedio.setEnabled(false);
+    botonObjeto.setEnabled(false);
+}
+
+
+    private void ejecutarParser() {
+    String codigo = textAreaProgram.getText();
+    try {
+        Parser parser = new Parser(codigo);
+
+        // Mostrar la tabla de símbolos en el textAreaIntermedio
+        String tablaSimbolosTexto = parser.getSymbolTableString();
+        textAreaIntermedio.setText(tablaSimbolosTexto);
+
+        JOptionPane.showMessageDialog(miVentana, "Análisis sintáctico completado correctamente.", "Parser",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        // Habilitar otros botones si quieres
+        botonSemantico.setEnabled(true);
+        botonIntermedio.setEnabled(true);
+        botonObjeto.setEnabled(true);
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(miVentana, "Error en Parser:\n" + ex.getMessage(), "Error",
+                JOptionPane.ERROR_MESSAGE);
     }
+}
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Main::new);
