@@ -10,23 +10,22 @@ public class Scanner {
     private final String[] tokens;
     private String tipoToken;
     private String token;
-    private final String[] reservadas = {"if", "then", "else", "begin", "print", "end", "int", "float"};
-    private final String[] operadores = {"==", ":=", "+"};
+
+    // Se agregaron "long" y "double"
+    private final String[] reservadas = {"if", "then", "else", "begin", "print", "end", "int", "float", "long", "double"};
+
+    // Se agregaron "-", "*", "/"
+    private final String[] operadores = {"==", ":=", "+", "-", "*", "/"};
+    
     private final String delimitador = ";";
 
-
-//main 
-
-/*public static void main(String[] args){
-    System.out.println("hello");
-
-    new Scanner("codigo texto de prueba");
-}*/
-    
 //CONSTRUCTOR
     public Scanner(String codigo) {
-        tokens = codigo.split("\\s+");
-        lineaNo = 0; //Aun sin implementar...
+    tokens = codigo
+    .replaceAll("([:=]=|==|:=|\\+|\\-|\\*|/|;)", " $1 ")
+    .trim()
+    .split("\\s+");
+        lineaNo = 0; 
         k=0;
         token = "";
     }
@@ -95,7 +94,7 @@ public class Scanner {
        //Validación del primer caracter:
         if((charArray[i]>='a' && charArray[i]<='z') || 
                 (charArray[i] >= 'A' && charArray[i] <= 'Z') ||
-                (charArray[i]=='_')){ //(charArray[i]=='_') || (charArray[i]=='-')){
+                (charArray[i]=='_')){
             tokenValido = true;
         }
         //Validación del resto del token (si su longitud es mayor a 1):

@@ -1,0 +1,14 @@
+Program -> D S <eof>
+D → id (int | long | float | double) ; D
+D → ε
+S → if E then S else S
+S → begin S L
+S → id := E
+S → print E
+L → end
+L → ; S L
+E → id == id
+E → id + id
+E → id - id
+E → id * id
+E → id / id
