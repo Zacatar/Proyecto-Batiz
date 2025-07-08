@@ -1,14 +1,18 @@
-
 package ArbolSintactico;
 
-public class Idx extends Expx{
-    private String s1;
-    
-    public Idx(String st1) {
-        s1 = st1;
+public class Idx extends Expx {
+    private String name;
+
+    public Idx(String name) {
+        this.name = name;
     }
-    
+
     public String getIdx() {
-        return s1;
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

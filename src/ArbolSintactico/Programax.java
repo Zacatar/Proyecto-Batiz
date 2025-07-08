@@ -1,17 +1,21 @@
 package ArbolSintactico;
+
 import java.util.Vector;
 
 public class Programax {
-    //private Declarax s1;
-    private Vector s1;
-    private Statx s2;
+    private Vector<Declarax> declarations;
+    private Statx statements;
     
-    public Programax(Vector st1, Statx st2) {
-        s1 = st1;
-        s2 = st2;
+    public Programax(Vector<Declarax> declarations, Statx statements) {
+        this.declarations = declarations;
+        this.statements = statements;
     }
     
-    public Vector getDeclaration() {return s1;}
+    public Vector<Declarax> getDeclarations() {
+        return declarations;
+    }
     
-    public Statx getStatement() {return s2;}
+    public Statx getStatements() {
+        return statements;
+    }
 }

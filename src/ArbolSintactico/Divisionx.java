@@ -1,10 +1,10 @@
 package ArbolSintactico;
 
-public class Comparax extends Expx {
+public class Divisionx extends Expx {
     private Expx left;
     private Expx right;
 
-    public Comparax(Expx left, Expx right) {
+    public Divisionx(Expx left, Expx right) {
         this.left = left;
         this.right = right;
     }
@@ -19,6 +19,6 @@ public class Comparax extends Expx {
 
     @Override
     public String toString() {
-        return left.toString() + " == " + right.toString();
+        return left.toString() + " / " + right.toString();
     }
 }
