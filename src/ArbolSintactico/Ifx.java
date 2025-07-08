@@ -1,23 +1,31 @@
-
 package ArbolSintactico;
 
-public class Ifx extends Statx{
-    private Expx s1;
-    private Statx s2;
-    private Statx s3;
-    
-    public Ifx(Expx st1, Statx st2, Statx st3) {
-        s1 = st1;
-        s2 = st2;
-        s3 = st3;  
+public class Ifx extends Statx {
+    private Expx condition;
+    private Statx thenBlock;
+    private Statx elseBlock;
+
+    public Ifx(Expx condition, Statx thenBlock, Statx elseBlock) {
+        this.condition = condition;
+        this.thenBlock = thenBlock;
+        this.elseBlock = elseBlock;
     }
-    
-    public Object[] getVariables() {
-        Object obj[] = new Object[3];
-        obj[0] = s1;
-        obj[1] = s2;
-        obj[2] = s3;
-        return obj;
+
+    public Expx getCondition() {
+        return condition;
+    }
+
+    public Statx getThenBlock() {
+        return thenBlock;
+    }
+
+    public Statx getElseBlock() {
+        return elseBlock;
+    }
+
+    @Override
+    public String toString() {
+        return "If (" + condition + ") Then " + thenBlock + " Else " + elseBlock;
     }
     
 }

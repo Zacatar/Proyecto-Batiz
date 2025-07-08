@@ -36,11 +36,11 @@ public class Scanner {
         if (k >= tokens.length) return null;  
         token = tokens[k]; 
         if(b) {
-            k++;
-            if(k >= tokens.length) return null;{ // Aseguramos que no se salga del límite del array
-                token = tokens[k];
-            }
-        }
+    k++;
+    if(k >= tokens.length) return null;
+    token = tokens[k];
+}
+
                 
         //VERIFICACIÓN LÉXICA
         //Palabras reservadas:
@@ -86,32 +86,29 @@ public class Scanner {
     }
     
     public boolean validaIdentificador(String t) {
-        boolean tokenValido = false;
-        char[] charArray;
-        charArray = t.toCharArray();
-        int i=0;
-        
-       //Validación del primer caracter:
-        if((charArray[i]>='a' && charArray[i]<='z') || 
-                (charArray[i] >= 'A' && charArray[i] <= 'Z') ||
-                (charArray[i]=='_')){
-            tokenValido = true;
-        }
-        //Validación del resto del token (si su longitud es mayor a 1):
-        if(t.length() > 1 && tokenValido) {
-            for(int j=1 ; j<charArray.length ; j++) {
-                if((charArray[j]>='a' && charArray[j]<='z') || 
-                (charArray[j] >= 'A' && charArray[j] <= 'Z') ||
-                (charArray[j]=='_') || (charArray[j]=='-') || (charArray[j]>='0' && charArray[j]<='9')){
-                    tokenValido = true;
-                }
-            }
-        }
-        else if(t.length() > 1 && tokenValido) {
-            tokenValido = false;
-        }
-        return tokenValido;
+    if (t == null || t.isEmpty()) return false;
+
+    char[] charArray = t.toCharArray();
+
+    // Validar primer caracter
+    if (!((charArray[0] >= 'a' && charArray[0] <= 'z') ||
+          (charArray[0] >= 'A' && charArray[0] <= 'Z') ||
+          charArray[0] == '_')) {
+        return false;
     }
+
+    // Validar resto caracteres
+    for (int i = 1; i < charArray.length; i++) {
+        char c = charArray[i];
+        if (!((c >= 'a' && c <= 'z') ||
+              (c >= 'A' && c <= 'Z') ||
+              (c == '_') || (c == '-') || (c >= '0' && c <= '9'))) {
+            return false;
+        }
+    }
+    return true;
+}
+
     
     public void setTipoToken(String tipo, boolean b) {
         if(b) {
@@ -124,8 +121,10 @@ public class Scanner {
     }
     
     public String checkNextToken() {
-        return tokens[k];
-    }
+    if (k >= tokens.length) return null;
+    return tokens[k];
+}
+
     
     public void error(String error) {
         switch(JOptionPane.showConfirmDialog(null,

@@ -39,13 +39,14 @@ public String getSymbolTableString() {
     StringBuilder sb = new StringBuilder();
     sb.append("TABLA DE SÍMBOLOS\n");
     sb.append("-----------------\n");
-    for(int i=0; i<tablaSimbolos.size(); i++) {
-        Declarax dx = (Declarax)tablaSimbolos.get(i);
-        sb.append(dx.s1).append(" : ").append(dx.s2.getTypex()).append("\n");
+    for(int i = 0; i < tablaSimbolos.size(); i++) {
+        Declarax dx = (Declarax) tablaSimbolos.get(i);
+        sb.append(dx.getNombre()).append(" : ").append(dx.getTipo().getTypex()).append("\n");
     }
     sb.append("-----------------\n");
     return sb.toString();
 }
+
 
     public Parser(String codigo) {  
         s = new Scanner(codigo);
@@ -56,30 +57,36 @@ public String getSymbolTableString() {
     
     //INICIO DE ANÁLISIS SINTÁCTICO
     public void advance() {
-    token = s.getToken(true);
-    tknCode = stringToCode(token);
-    tokenActual = s.getToken(false);
+    token = s.getToken(true);          // Avanza al siguiente token
+    tknCode = stringToCode(token);     // Convierte a código
+    tokenActual = token;               // Guarda el token actual
 }
-
 
 public void eat(int t) {
     tokenEsperado = t;
-    if(tknCode == t) {
-        setLog("Token: " + token + "\n" + "Tipo:  "+ s.getTipoToken());
+    if (tknCode == t) {
+        setLog("✔️ Token aceptado: " + token + " (Tipo: " + s.getTipoToken() + ")");
         advance();
-    }
-    else {
-        error(token, "token tipo:"+t);
+    } else {
+        error(token, "Se esperaba token de tipo: " + t + ", pero se recibió: " + tknCode);
     }
 }
 
 public Programax P() {
-    D();          // Procesa todas las declaraciones, llenando tablaSimbolos
-    createTable(); // Imprime la tabla de símbolos
-    Statx st = S(); // Procesa sentencias
-    
+    D();          // Declaraciones
+    createTable();
+    Statx st = null;
+    if (tknCode != -1) { // Asegurar que no sea EOF, según tu implementación
+        st = S();
+        while(tknCode == semi) {
+            eat(semi);
+            Statx siguiente = S();
+            st = new Listax(st, siguiente);
+        }
+    }
     return new Programax(tablaSimbolos, st);
 }
+
 
 
 // Declaraciones múltiples (D → id (int | float) ; D | ε)
@@ -117,93 +124,99 @@ public void D() {
         }
     }
     
-    public Statx S() { //return statement
-        switch(tknCode) {
-            case ifx:
-                Expx e1;
-                Statx s1, s2;
-                eat(ifx);
-                e1= E();
-                eat(thenx);
-                s1=S();
-                eat(elsex);
-                s2=S();                
-                return new Ifx(e1, s1, s2);
+    public Statx S() {
+    switch(tknCode) {
+        case ifx:
+            Expx e1;
+            Statx s1, s2;
+            eat(ifx);
+            e1 = E();
+            eat(thenx);
+            s1 = S();
+            eat(elsex);
+            s2 = S();
+            return new Ifx(e1, s1, s2);
 
-                
-            case beginx:
-                eat(beginx);    S();    L();
-                return null;
-                
-            case id:
-                Idx i;
-                Expx e;
-                eat(id);   i=new Idx(tokenActual);  declarationCheck(tokenActual); byteCode("igual", tokenActual);  eat(igual);   e=E();
-                return new Asignax(i, e);
-                
-            case printx:
-                Expx ex;
-                eat(printx);    ex=E();
-                return new Printx(ex);
-                
-            default: error(token, "(if | begin | id | print)");
-                return null;
-        }
+        case beginx:
+            eat(beginx);
+            Statx sentencias = S();   // Primera sentencia
+            while (tknCode == semi) { // Mientras haya ';'
+                eat(semi);
+                Statx siguiente = S();
+                sentencias = new Listax(sentencias, siguiente);
+            }
+            eat(endx);
+            return sentencias;
+
+        case id:
+            Idx i;
+            Expx e;
+            eat(id);
+            i = new Idx(tokenActual);
+            declarationCheck(tokenActual);
+            byteCode("igual", tokenActual);
+            eat(igual);
+            e = E();
+            return new Asignax(i, e);
+
+        case printx:
+            Expx ex;
+            eat(printx);
+            ex = E();
+            return new Printx(ex);
+
+        default:
+            error(token, "(if | begin | id | print)");
+            return null;
     }
+}
+
     
-    public void L() {       
-        switch(tknCode) {
-            case endx:
-                eat(endx);
-            break;
-                
-            case semi:
-                eat(semi);      S();    L();
-            break;
-            default: error(token, "(end | ;)");
-        }
-    }
+    
+
     
     public Expx E() {
-       Idx i1, i2;
-       String comp1, comp2;
-       
-       if(tknCode == id) {
-           comp1 = token;
-           declarationCheck(token);
-           eat(id); 
-           i1 = new Idx(token); 
-           switch(stringToCode(token)) {
-               
-               case sum:  
-                   comp2 = tokenActual;
-                   eat(sum);   eat(id);
-                   i2 = new Idx(comp2); //(tokenActual)
-                   declarationCheck(comp2);
-                   compatibilityCheck(comp1,comp2);
-                   byteCode("suma", comp1, comp2);
-                   System.out.println("Operación: " + comp1 + "+" + comp2);
-                   return new Sumax(i1, i2);
-                   
-               case igualdad:
-                   comp2 = tokenActual;
-                   eat(igualdad);   eat(id);
-                   i2 = new Idx(comp2);
-                   declarationCheck(comp2);
-                   compatibilityCheck(comp1,comp2);
-                   byteCode("igualdad", comp1, comp2);
-                   return new Comparax(i1, i2);
-                   
-               default: 
-                   error(token, "(+ / ==)");
-                   return null;
-           }
-       }
-       else{
-           error(token, "(id)");
-           return null;
-       }
-    } //FIN DEL ANÁLISIS SINTÁCTICO
+    Expx left = null;
+
+    if (tknCode == id) {
+        String id1 = token;
+        declarationCheck(id1);
+        eat(id);
+        left = new Idx(id1);
+
+        // Si el siguiente token es operador, procesar el segundo operando
+        switch (tknCode) {
+            case sum:      // +
+                eat(sum);
+                Expx rightSum = E();  // Recursión para permitir expresiones complejas
+                return new Sumax(left, rightSum);
+            case 14:       // -
+                eat(14);
+                Expx rightRest = E();
+                return new Restax(left, rightRest);
+            case 15:       // *
+                eat(15);
+                Expx rightMul = E();
+                return new Multiplicacionx(left, rightMul);
+            case 16:       // /
+                eat(16);
+                Expx rightDiv = E();
+                return new Divisionx(left, rightDiv);
+            case igualdad: // ==
+                eat(igualdad);
+                Expx rightComp = E();
+                return new Comparax(left, rightComp);
+            default:
+                // No hay operador, solo un Idx
+                return left;
+        }
+    } else {
+        error(token, "(id)");
+        return null;
+    }
+}
+
+ //FIN DEL ANÁLISIS SINTÁCTICO
     
     
     
@@ -240,6 +253,9 @@ public void D() {
             case "==": codigo=10; break;
             case "int": codigo=11; break;
             case "float": codigo=12; break;
+            case "-": codigo = 14 ; break; // Añadido para soportar resta
+            case "*": codigo = 15 ; break; // Añadido para soportar multiplicación
+            case "/": codigo = 16 ; break; // Añadido para soportar división
             default: codigo=13; break;
         }
         return codigo;
@@ -261,81 +277,77 @@ public void D() {
     //-----------------------------------------------
     
     //Recorrido de la parte izquierda del árbol y creación de la tabla de símbolos
-    public void createTable() {
-        //String[] aux1 = new String[tablaSimbolos.size()];
-        //String[] aux2 = new String[tablaSimbolos.size()];
-        variable = new String[tablaSimbolos.size()];
-        tipo = new String[tablaSimbolos.size()];
-        
-        //Imprime tabla de símbolos
-        System.out.println("-----------------");
-        System.out.println("TABLA DE SÍMBOLOS");
-        System.out.println("-----------------");
-        for(int i=0; i<tablaSimbolos.size(); i++) {
-            Declarax dx;
-            Typex tx;
-            dx = (Declarax)tablaSimbolos.get(i);
-            variable[i] = dx.s1;
-            tipo[i] = dx.s2.getTypex();                   
-            System.out.println(variable[i] + ": "+ tipo[i]); //Imprime tabla de símbolos por consola.
-        }
-        
-        ArrayUtils.reverse(variable);
-        ArrayUtils.reverse(tipo);
-        
-        System.out.println("-----------------\n");
+   public void createTable() {
+    int size = tablaSimbolos.size();
+    variable = new String[size];
+    tipo = new String[size];
+
+    System.out.println("-----------------");
+    System.out.println("TABLA DE SÍMBOLOS");
+    System.out.println("-----------------");
+    
+    for(int i = 0; i < size; i++) {
+        Declarax dx = (Declarax) tablaSimbolos.get(i);
+        variable[i] = dx.getNombre();
+        tipo[i] = dx.getTipo().getTypex();
+        System.out.println(variable[i] + ": " + tipo[i]);
     }
-    
-    
-    //Verifica las declaraciones de las variables consultando la tabla de símbolos
-    public void declarationCheck(String s) {
-        boolean valido = false;
-        for (int i=0; i<tablaSimbolos.size(); i++) {
-            if(s.equals(variable[i])) {
-                valido = true;
-                break;
-            }
-        }
-        if(!valido) {
-            System.out.println("La variable "+ s +  " no está declarada.\nSe detuvo la ejecución.");
-             javax.swing.JOptionPane.showMessageDialog(null, "La variable [" + s + "] no está declarada", "Error",
-                   javax.swing.JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    
-    //Chequeo de tipos consultando la tabla de símbolos
-    public void compatibilityCheck(String s1, String s2) {
-        Declarax elementoCompara1;
-        Declarax elementoCompara2;
-        System.out.println("CHECANDO COMPATIBILIDAD ENTRE TIPOS ("+s1+", "+s2+"). ");
-        boolean termino = false;
-        for(int i=0; i<tablaSimbolos.size() ; i++) {
-          elementoCompara1 = (Declarax) tablaSimbolos.elementAt(i);
-          if(s1.equals(elementoCompara1.s1)) {
-            System.out.println("Se encontró el primer elemento en la tabla de símbolos...");
-            for(int j=0; j<tablaSimbolos.size() ; j++) {
-              elementoCompara2 = (Declarax) tablaSimbolos.elementAt(j);
-              if(s2.equals(elementoCompara2.s1)) {
-                System.out.println("Se encontró el segundo elemento en la tabla de símbolos...");
-                if(tipo[i].equals(tipo[j])) {
-                  termino = true;
-                  break;
-                }else{
-                  termino = true;
-                    javax.swing.JOptionPane.showMessageDialog(null, "Incompatibilidad de tipos: "+ elementoCompara1.s1 +" ("
-                      + elementoCompara1.s2.getTypex() + "), "+elementoCompara2.s1 +" (" + elementoCompara2.s2.getTypex()
-                      +").", "Error",
-                      javax.swing.JOptionPane.ERROR_MESSAGE);
-                }
-                break;
-              }
-            }
-          }
-          if(termino) {
+    System.out.println("-----------------\n");
+}
+
+
+public void declarationCheck(String s) {
+    boolean valido = false;
+    for (int i = 0; i < tablaSimbolos.size(); i++) {
+        Declarax dx = (Declarax) tablaSimbolos.elementAt(i);
+        if(s.equals(dx.getNombre())) {
+            valido = true;
             break;
-          }
         }
     }
+    if(!valido) {
+        System.out.println("La variable " + s + " no está declarada.\nSe detuvo la ejecución.");
+        javax.swing.JOptionPane.showMessageDialog(null, "La variable [" + s + "] no está declarada", "Error",
+              javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+
+// Chequeo de tipos consultando la tabla de símbolos
+public void compatibilityCheck(String s1, String s2) {
+    Declarax elementoCompara1 = null;
+    Declarax elementoCompara2 = null;
+    
+    // Busca elementos en la tabla de símbolos
+    for (int i = 0; i < tablaSimbolos.size(); i++) {
+        Declarax dx = (Declarax) tablaSimbolos.elementAt(i);
+        if (dx.getNombre().equals(s1)) {
+            elementoCompara1 = dx;
+        }
+        if (dx.getNombre().equals(s2)) {
+            elementoCompara2 = dx;
+        }
+    }
+    
+    if (elementoCompara1 == null) {
+        JOptionPane.showMessageDialog(null, "Variable no declarada: " + s1, "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+    if (elementoCompara2 == null) {
+        JOptionPane.showMessageDialog(null, "Variable no declarada: " + s2, "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+    
+    System.out.println("CHECANDO COMPATIBILIDAD ENTRE TIPOS (" + s1 + ", " + s2 + ").");
+    
+    if (!elementoCompara1.getTipo().getTypex().equals(elementoCompara2.getTipo().getTypex())) {
+        JOptionPane.showMessageDialog(null, "Incompatibilidad de tipos: " + elementoCompara1.getNombre() + " (" 
+            + elementoCompara1.getTipo().getTypex() + "), " + elementoCompara2.getNombre() + " (" 
+            + elementoCompara2.getTipo().getTypex() + ").", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+
     
     public void byteCode(String tipo, String s1,String s2){
         int pos1=-1, pos2=-1;
@@ -383,22 +395,18 @@ public void D() {
     }
     
     public void ipbc(String ins) {
-        while(pilaBC[cntBC] != null) {
-            cntBC++;
-        }
-        cntIns++;
-        pilaBC[cntBC] = ins;
+    while(cntBC < pilaBC.length && pilaBC[cntBC] != null) {
         cntBC++;
     }
-    
-    public String getBytecode() {
-        String JBC = "";
-        for(int i=0; i<pilaBC.length; i++) {
-            if(pilaBC[i] != null){
-                JBC = JBC + pilaBC[i] + "\n";
-            }
-        }
-        return JBC;
-    }    
+    if (cntBC >= pilaBC.length) {
+        // Manejar error o ampliar arreglo
+        System.err.println("Error: pilaBC llena, no se puede agregar más instrucciones.");
+        return;
+    }
+    pilaBC[cntBC] = ins;
+    cntBC++;
+    cntIns++;
+}
+
 }
 

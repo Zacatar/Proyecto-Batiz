@@ -1,12 +1,24 @@
-
 package ArbolSintactico;
 
 public class Declarax {
-    public String s1;
-    public Typex s2;    
+    private String nombre;    // nombre de la variable
+    private Typex tipo;       // tipo asociado
     
-    public Declarax(String st1, Typex st2) {
-        s1 = st1;
-        s2 = st2;
+    public Declarax(String nombre, Typex tipo) {
+        this.nombre = nombre;
+        this.tipo = tipo;
+    }
+    
+    public String getNombre() {
+        return nombre;
+    }
+    
+    public Typex getTipo() {
+        return tipo;
+    }
+    
+    @Override
+    public String toString() {
+        return nombre + " : " + tipo.getTypex();
     }
 }
