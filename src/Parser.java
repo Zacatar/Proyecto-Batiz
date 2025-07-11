@@ -265,6 +265,11 @@ public void D() {
             case "/": codigo = 16 ; break; // Añadido para soportar división
             case "while": codigo=14; break; // Añadido para soportar while
             case "do": codigo=15; break; // Añadido para soportar do
+            case "int": codigo=11; break;  // Añadido para soportar tipo int
+            case "float": codigo=12; break; // Añadido para soportar tipo float
+            case "-": codigo = 14 ; break; // Añadido para soportar resta
+            case "*": codigo = 15 ; break; // Añadido para soportar multiplicación
+            case "/": codigo = 16 ; break; // Añadido para soportar división
             default: codigo=13; break;
         }
         return codigo;
