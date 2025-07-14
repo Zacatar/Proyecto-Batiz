@@ -2,6 +2,7 @@ Program -> D S <eof>
 D → id (int | long | float | double) ; D
 D → ε
 S → if E then S else S
+S → while E do S
 S → begin S L
 S → id := E
 S → print E

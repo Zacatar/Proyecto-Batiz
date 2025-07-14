@@ -12,7 +12,7 @@ public class Scanner {
     private String token;
 
     // Se agregaron "long" y "double"
-    private final String[] reservadas = {"if", "then", "else", "begin", "print", "end", "int", "float", "long", "double"};
+    private final String[] reservadas = {"if", "then", "else", "begin", "print", "end", "while", "do", "int", "float", "long", "double"};
 
     // Se agregaron "-", "*", "/"
     private final String[] operadores = {"==", ":=", "+", "-", "*", "/"};

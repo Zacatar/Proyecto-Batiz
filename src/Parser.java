@@ -14,7 +14,7 @@ public class Parser {
     private Vector tablaSimbolos = new Vector();
     private final Scanner s;
     final int ifx=1, thenx=2, elsex=3, beginx=4, endx=5, printx=6, semi=7,
-            sum=8, igual=9, igualdad=10, intx=11, floatx=12, id=13;
+            sum=8, igual=9, igualdad=10, intx=11, floatx=12, id=13, whilex=14, dox=15, rest=16, multiplicacion=17, division=18;
     private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
     
@@ -164,6 +164,13 @@ public void D() {
             eat(printx);
             ex = E();
             return new Printx(ex);
+            
+        case whilex:
+            eat(whilex);
+            Expx cond = E();
+            eat(dox);
+            Statx cuerpo = S();
+            return new Whilex(cond, cuerpo);
 
         default:
             error(token, "(if | begin | id | print)");
@@ -251,11 +258,13 @@ public void D() {
             case "+": codigo=8; break;
             case ":=": codigo=9; break;
             case "==": codigo=10; break;
-            case "int": codigo=11; break;
-            case "float": codigo=12; break;
+            case "int": codigo=11; break; // Añadido para soportar tipo int
+            case "float": codigo=12; break; // Añadido para soportar tipo float
             case "-": codigo = 14 ; break; // Añadido para soportar resta
             case "*": codigo = 15 ; break; // Añadido para soportar multiplicación
             case "/": codigo = 16 ; break; // Añadido para soportar división
+            case "while": codigo=17; break; // Añadido para soportar while
+            case "do": codigo=18; break; // Añadido para soportar do
             default: codigo=13; break;
         }
         return codigo;

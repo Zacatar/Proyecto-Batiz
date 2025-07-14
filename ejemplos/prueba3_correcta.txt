@@ -1,4 +1,12 @@
-var1 int ; 
-var2 int ; 
-var1 := var2 + var1 ; 
-print var1 + var2 ;
+i int ;
+j int ;
+
+while i == j do
+begin
+    print i ;
+    while i == j do
+    begin
+        print j ;
+        j := j - i ;
+    end ;
+end ;
