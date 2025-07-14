@@ -51,7 +51,7 @@ public String getSymbolTableString() {
 
     public Parser(String codigo) {  
         s = new Scanner(codigo);
-        token = s.getToken(false);
+        token = s.getToken(true);
         tknCode = stringToCode(token);
         p = P();
     }
@@ -249,33 +249,33 @@ public void D() {
                 break;
         }
     }
+    
     public int stringToCode(String t) {
-    int codigo = 0;
-    switch(t) {
-        case "if": codigo = 1; break;         // ifx
-        case "then": codigo = 2; break;       // thenx
-        case "else": codigo = 3; break;       // elsex
-        case "begin": codigo = 4; break;      // beginx
-        case "end": codigo = 5; break;        // endx
-        case "print": codigo = 6; break;      // printx
-        case ";": codigo = 7; break;          // semi
-        case "+": codigo = 8; break;          // sum
-        case ":=": codigo = 9; break;         // igual
-        case "==": codigo = 10; break;        // igualdad
-        case "int": codigo = 11; break;       // intx
-        case "float": codigo = 12; break;     // floatx
-        case "double": codigo = 19; break;    // doublex
-        case "long": codigo = 20; break;      // longx
-        case "while": codigo = 14; break;     // whilex
-        case "do": codigo = 15; break;        // dox
-        case "-": codigo = 16; break;         // rest
-        case "*": codigo = 17; break;         // multiplicacion
-        case "/": codigo = 18; break;         // division
-        default: codigo = 13; break;          // id
+        int codigo = 0;
+        switch(t) {
+            case "if": codigo=1; break;    
+            case "then": codigo=2; break;
+            case "else": codigo=3; break;
+            case "begin": codigo=4; break;
+            case "end": codigo=5; break;
+            case "print": codigo=6; break;
+            case ";": codigo=7; break;
+            case "+": codigo=8; break;
+            case ":=": codigo=9; break;
+            case "==": codigo=10; break;
+            case "int": codigo=11; break; // Añadido para soportar tipo int
+            case "float": codigo=12; break; // Añadido para soportar tipo float
+            case "double" : codigo=19; break; // Añadido para soportar tipo double
+            case "long" : codigo=20; break; // Añadido para soportar tipo long
+            case "-": codigo = 14 ; break; // Añadido para soportar resta
+            case "*": codigo = 15 ; break; // Añadido para soportar multiplicación
+            case "/": codigo = 16 ; break; // Añadido para soportar división
+            case "while": codigo=17; break; // Añadido para soportar while
+            case "do": codigo=18; break; // Añadido para soportar do
+            default: codigo=13; break;
+        }
+        return codigo;
     }
-    return codigo;
-}
-
     
     //Métodos para recoger la información de los tokens para luego mostrarla
     public void setLog(String l) {
