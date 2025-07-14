@@ -14,7 +14,7 @@ public class Parser {
     private Vector tablaSimbolos = new Vector();
     private final Scanner s;
     final int ifx=1, thenx=2, elsex=3, beginx=4, endx=5, printx=6, semi=7,
-            sum=8, igual=9, igualdad=10, intx=11, floatx=12, id=13, whilex=14, dox=15, rest=16, multiplicacion=17, division=18, 
+            sum=8, igual=9, igualdad=10, intx=11, floatx=12, id=13, whilex=17, dox=18, rest=14, multiplicacion=15, division=16, 
             longx = 20, doublex = 19;
     private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
