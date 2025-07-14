@@ -1,11 +1,11 @@
-minimo float ;
-maximo float ;
+x double ;
+y double ;
 
-if minimo == maximo then
-	print maximo + minimo
+if x == y then
+    while x == y do
+    begin
+        print x ;
+        x := x / y ;
+    end ;
 else
-   print minimo + maximo ;
-
-print minimo + maximo 
-
-end
+    print y ;
