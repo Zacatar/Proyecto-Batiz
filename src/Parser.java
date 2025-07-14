@@ -14,7 +14,8 @@ public class Parser {
     private Vector tablaSimbolos = new Vector();
     private final Scanner s;
     final int ifx=1, thenx=2, elsex=3, beginx=4, endx=5, printx=6, semi=7,
-            sum=8, igual=9, igualdad=10, intx=11, floatx=12, id=13, whilex=14, dox=15, rest=16, multiplicacion=17, division=18;
+            sum=8, igual=9, igualdad=10, intx=11, floatx=12, id=13, whilex=14, dox=15, rest=16, multiplicacion=17, division=18, 
+            longx = 20, doublex = 19;
     private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
     
@@ -50,7 +51,7 @@ public String getSymbolTableString() {
 
     public Parser(String codigo) {  
         s = new Scanner(codigo);
-        token = s.getToken(true);
+        token = s.getToken(false);
         tknCode = stringToCode(token);
         p = P();
     }
@@ -95,12 +96,12 @@ public void D() {
     while (tknCode == id) {
         String idToken = token; // Guarda el id actual
         eat(id);                // Consume el id
-        if (tknCode == intx || tknCode == floatx) {
+        if (tknCode == intx || tknCode == floatx || tknCode == longx || tknCode == doublex) {
             Typex tipo = T();   // Consume el tipo (int o float)
             eat(semi);          // Consume ';'
             tablaSimbolos.addElement(new Declarax(idToken, tipo));
         } else {
-            error(token, "(int | float)");
+            error(token, "(int | long | float | double)");
             return; // o lanzar excepción para detener ejecución
         }
     }
@@ -110,19 +111,23 @@ public void D() {
 
     
     public Typex T() {
-        if(tknCode == intx) {
-            eat(intx);
-            return new Typex("int");
-        }
-        else if(tknCode == floatx) {
-            eat(floatx);
-            return new Typex("float");
-        }
-        else{
-            error(token, "(int / float)");
-            return null;
-        }
+    if(tknCode == intx) {
+        eat(intx);
+        return new Typex("int");
+    } else if(tknCode == floatx) {
+        eat(floatx);
+        return new Typex("float");
+    } else if(tknCode == longx) {
+        eat(longx);
+        return new Typex("long");
+    } else if(tknCode == doublex) {
+        eat(doublex);
+        return new Typex("double");
+    } else {
+        error(token, "(int / float / long / double)");
+        return null;
     }
+}
     
     public Statx S() {
     switch(tknCode) {
@@ -244,31 +249,33 @@ public void D() {
                 break;
         }
     }
-    
     public int stringToCode(String t) {
-        int codigo = 0;
-        switch(t) {
-            case "if": codigo=1; break;    
-            case "then": codigo=2; break;
-            case "else": codigo=3; break;
-            case "begin": codigo=4; break;
-            case "end": codigo=5; break;
-            case "print": codigo=6; break;
-            case ";": codigo=7; break;
-            case "+": codigo=8; break;
-            case ":=": codigo=9; break;
-            case "==": codigo=10; break;
-            case "int": codigo=11; break; // Añadido para soportar tipo int
-            case "float": codigo=12; break; // Añadido para soportar tipo float
-            case "-": codigo = 14 ; break; // Añadido para soportar resta
-            case "*": codigo = 15 ; break; // Añadido para soportar multiplicación
-            case "/": codigo = 16 ; break; // Añadido para soportar división
-            case "while": codigo=17; break; // Añadido para soportar while
-            case "do": codigo=18; break; // Añadido para soportar do
-            default: codigo=13; break;
-        }
-        return codigo;
+    int codigo = 0;
+    switch(t) {
+        case "if": codigo = 1; break;         // ifx
+        case "then": codigo = 2; break;       // thenx
+        case "else": codigo = 3; break;       // elsex
+        case "begin": codigo = 4; break;      // beginx
+        case "end": codigo = 5; break;        // endx
+        case "print": codigo = 6; break;      // printx
+        case ";": codigo = 7; break;          // semi
+        case "+": codigo = 8; break;          // sum
+        case ":=": codigo = 9; break;         // igual
+        case "==": codigo = 10; break;        // igualdad
+        case "int": codigo = 11; break;       // intx
+        case "float": codigo = 12; break;     // floatx
+        case "double": codigo = 19; break;    // doublex
+        case "long": codigo = 20; break;      // longx
+        case "while": codigo = 14; break;     // whilex
+        case "do": codigo = 15; break;        // dox
+        case "-": codigo = 16; break;         // rest
+        case "*": codigo = 17; break;         // multiplicacion
+        case "/": codigo = 18; break;         // division
+        default: codigo = 13; break;          // id
     }
+    return codigo;
+}
+
     
     //Métodos para recoger la información de los tokens para luego mostrarla
     public void setLog(String l) {
