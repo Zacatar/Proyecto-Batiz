@@ -1,0 +1,11 @@
+a long ;
+b long ;
+
+repeat
+begin
+    a := a + b ;
+    b := a * b ;
+    print b ;
+until a == b
+
+end ;
