@@ -15,7 +15,7 @@ public class Parser {
     private final Scanner s;
     final int ifx=1, thenx=2, elsex=3, beginx=4, endx=5, printx=6, semi=7,
             sum=8, igual=9, igualdad=10, intx=11, floatx=12, id=13, whilex=17, dox=18, rest=14, multiplicacion=15, division=16, 
-            longx = 20, doublex = 19;
+            longx = 20, doublex = 19, repeatx = 21, untilx = 22;
     private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
     
@@ -177,8 +177,17 @@ public void D() {
             Statx cuerpo = S();
             return new Whilex(cond, cuerpo);
 
+        case repeatx: // Nuevo caso para repeat...until
+            Statx repeatedBody;
+            Expx repeatCondition;
+            eat(repeatx);
+            repeatedBody = S(); // Parsear la(s) sentencia(s) dentro del bucle repeat
+            eat(untilx);
+            repeatCondition = E(); // Parsear la condición
+            return new Repeatx(repeatedBody, repeatCondition);
+
         default:
-            error(token, "(if | begin | id | print)");
+            error(token, "(if | begin | id | print | while | repeat)"); // Actualizar mensaje de error
             return null;
     }
 }
@@ -272,6 +281,8 @@ public void D() {
             case "/": codigo = 16 ; break; // Añadido para soportar división
             case "while": codigo=17; break; // Añadido para soportar while
             case "do": codigo=18; break; // Añadido para soportar do
+            case "repeat": codigo=21; break; // Añadido para soportar repeat
+            case "until": codigo=22; break; // Añadido para soportar until
             default: codigo=13; break;
         }
         return codigo;
