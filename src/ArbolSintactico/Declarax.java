@@ -21,4 +21,9 @@ public class Declarax {
     public String toString() {
         return nombre + " : " + tipo.getTypex();
     }
+
+    public Object getId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+    }
 }

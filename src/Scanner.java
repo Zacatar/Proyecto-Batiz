@@ -36,12 +36,11 @@ public class Scanner {
         if (k >= tokens.length) return null;  
         token = tokens[k]; 
         if(b) {
-    k++;
-    if(k >= tokens.length) return null;
-    token = tokens[k];
-}
+            k++;
+            if(k >= tokens.length) return null;
+            token = tokens[k];
+        }
 
-                
         //VERIFICACIÓN LÉXICA
         //Palabras reservadas:
         for (String reservada : reservadas) {
@@ -51,7 +50,7 @@ public class Scanner {
                 break;
             }
         }
-            //Operadores:
+        //Operadores:
         if(!tokenValido) {
             for(String operador : operadores) {
                 if(token.equals(operador)) {
@@ -61,29 +60,46 @@ public class Scanner {
                 }
             }
         }
-            //Delimitador:
+        //Delimitador:
         if(!tokenValido) {
             if(token.equals(delimitador)) {
                 tokenValido = true;
                 setTipoToken("Delimitador", b);
             }
         }
-        
-            //Identificadores:
+        //Identificadores:
         if(!tokenValido) {
             if(validaIdentificador(token)) {
                 tokenValido = true;
                 setTipoToken("Identificador", b);
             }
         }
-        
-            //Error:
+        // Números:
+        if(!tokenValido) {
+            if(validaNumero(token)) {
+                tokenValido = true;
+                setTipoToken("Número", b);
+            }
+        }
+        //Error:
         if(!tokenValido) {
             error("el token \"" + token + "\" es inválido para el lenguaje.");
             return "TOKEN INVÁLIDO";
         }
         return token;
     }
+
+    public boolean validaNumero(String t) {
+        if (t == null || t.isEmpty()) return false;
+
+        try {
+            Double.parseDouble(t);  // admite enteros y decimales
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    
     
     public boolean validaIdentificador(String t) {
     if (t == null || t.isEmpty()) return false;

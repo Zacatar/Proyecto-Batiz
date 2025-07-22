@@ -7,7 +7,7 @@ public class Idx extends Expx {
         this.name = name;
     }
 
-    public String getIdx() {
+    public String getid() {  // <- Método corregido
         return name;
     }
 
