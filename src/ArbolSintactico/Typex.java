@@ -15,4 +15,9 @@ public class Typex {
     public String toString() {
         return s1;
     }
+
+    public Object getTipo() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTipo'");
+    }
 }

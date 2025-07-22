@@ -1,5 +1,3 @@
-
-
 import javax.swing.JOptionPane;
 import ArbolSintactico.*;
 import java.util.Vector;
@@ -69,7 +67,7 @@ public void eat(int t) {
         setLog("✔️ Token aceptado: " + token + " (Tipo: " + s.getTipoToken() + ")");
         advance();
     } else {
-        error(token, "Se esperaba token de tipo: " + t + ", pero se recibió: " + tknCode);
+        error(token, "Token tipo " + t + " esperado, recibido " + tknCode);
     }
 }
 
@@ -130,65 +128,57 @@ public void D() {
 }
     
     public Statx S() {
-    switch(tknCode) {
-        case ifx:
-            Expx e1;
-            Statx s1, s2;
-            eat(ifx);
-            e1 = E();
-            eat(thenx);
-            s1 = S();
-            eat(elsex);
-            s2 = S();
-            return new Ifx(e1, s1, s2);
+        switch(tknCode) {
+            case ifx:
+                eat(ifx);
+                Expx condIf = E();
+                eat(thenx);
+                Statx thenStmt = S();
+                eat(elsex);
+                Statx elseStmt = S();
+                return new Ifx(condIf, thenStmt, elseStmt);
 
-        case beginx:
-            eat(beginx);
-            Statx sentencias = S();   // Primera sentencia
-            while (tknCode == semi) { // Mientras haya ';'
-                eat(semi);
-                Statx siguiente = S();
-                sentencias = new Listax(sentencias, siguiente);
-            }
-            eat(endx);
-            return sentencias;
+            case beginx:
+                eat(beginx);
+                Statx stmtList = S();
+                while (tknCode == semi) {
+                    eat(semi);
+                    Statx nextStmt = S();
+                    stmtList = new Listax(stmtList, nextStmt);
+                }
+                eat(endx);
+                return stmtList;
 
-        case id:
-            Idx i;
-            Expx e;
-            eat(id);
-            i = new Idx(tokenActual);
-            declarationCheck(tokenActual);
-            byteCode("igual", tokenActual);
-            eat(igual);
-            e = E();
-            return new Asignax(i, e);
+            case id:
+                String idName = tokenActual;
+                eat(id);
+                declarationCheck(idName);
+                eat(igual);
+                Expx expr = E();
+                return new Asignax(new Idx(idName), expr);
 
-        case printx:
-            Expx ex;
-            eat(printx);
-            ex = E();
-            return new Printx(ex);
-            
-        case whilex:
-            eat(whilex);
-            Expx cond = E();
-            eat(dox);
-            Statx cuerpo = S();
-            return new Whilex(cond, cuerpo);
+            case printx:
+                eat(printx);
+                Expx printExpr = E();
+                return new Printx(printExpr);
 
-        case repeatx: // Nuevo caso para repeat...until
-            Statx repeatedBody;
-            Expx repeatCondition;
-            eat(repeatx);
-            repeatedBody = S(); // Parsear la(s) sentencia(s) dentro del bucle repeat
-            eat(untilx);
-            repeatCondition = E(); // Parsear la condición
-            return new Repeatx(repeatedBody, repeatCondition);
+            case whilex:
+                eat(whilex);
+                Expx whileCond = E();
+                eat(dox);
+                Statx whileBody = S();
+                return new Whilex(whileCond, whileBody);
 
-        default:
-            error(token, "(if | begin | id | print | while | repeat)"); // Actualizar mensaje de error
-            return null;
+            case repeatx:
+                eat(repeatx);
+                Statx repeatBody = S();
+                eat(untilx);
+                Expx repeatCond = E();
+                return new Repeatx(repeatBody, repeatCond);
+
+            default:
+                error(token, "Sentencia válida (if, begin, id, print, while, repeat)");
+                return null;
     }
 }
 
@@ -241,23 +231,22 @@ public void D() {
     
     
     
-    public void error(String token, String t) {
-        switch(JOptionPane.showConfirmDialog(null,
-                "Error sintáctico:\n"
-                        + "El token:("+ token + ") no concuerda con la gramática del lenguaje,\n"
-                        + "se espera: " + t + ".\n"
-                        + "¿Desea detener la ejecución?",
-                "Ha ocurrido un error",
-                JOptionPane.YES_NO_OPTION)) {
-            case JOptionPane.NO_OPTION:
-                double e = 1.1;
-                break;
-                
-            case JOptionPane.YES_OPTION:
-                System.exit(0);
-                break;
-        }
+    public void error(String token, String esperado) {
+        String mensaje = "Error sintáctico:\n"
+            + "Token recibido: (" + token + ")\n"
+            + "Se esperaba: " + esperado + "\n";
+        
+        System.err.println(mensaje); // Imprime en consola
+
+        int opcion = JOptionPane.showConfirmDialog(null,
+            mensaje + "¿Desea detener la ejecución?",
+            "Error de Sintaxis",
+            JOptionPane.YES_NO_OPTION);
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            System.exit(1);
     }
+}
     
     public int stringToCode(String t) {
         int codigo = 0;
@@ -436,4 +425,3 @@ public void compatibilityCheck(String s1, String s2) {
 }
 
 }
-
