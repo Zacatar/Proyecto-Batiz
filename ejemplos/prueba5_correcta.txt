@@ -2,10 +2,9 @@ a long ;
 b long ;
 
 repeat
-begin
-    a := a + b ;
-    b := a * b ;
-    print b ;
+    begin
+        a := a + b ;
+        b := a * b ;
+        print b ;
+    end
 until a == b
-
-end ;

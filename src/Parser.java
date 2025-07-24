@@ -187,8 +187,8 @@ public void D() {
             return new Repeatx(repeatedBody, repeatCondition);
 
         default:
-            error(token, "(if | begin | id | print | while | repeat)"); // Actualizar mensaje de error
-            return null;
+            error(token, "(if | begin | id | print | while | do | repeat | until)"); // Actualizar mensaje de error
+            throw new RuntimeException("Error sintáctico: token inesperado '" + token + "'");
     }
 }
 
@@ -373,8 +373,6 @@ public void compatibilityCheck(String s1, String s2) {
             + elementoCompara2.getTipo().getTypex() + ").", "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
-
-
     
     public void byteCode(String tipo, String s1,String s2){
         int pos1=-1, pos2=-1;
